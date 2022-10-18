@@ -42,20 +42,48 @@ app.post("/api/notes", (req,res) => {
         "text": req.body.text,
         "id": uuidv4()
     }
-    console.log(newNote);
-
+    
     const filePath = "./db/db.json";
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
-          console.error(err);
+            console.error(err);
         } else {
-          const parsedData = JSON.parse(data);
-          parsedData.push(newNote);
-          writeToFile(filePath, parsedData);
+            const parsedData = JSON.parse(data);
+            parsedData.push(newNote);
+            writeToFile(filePath, parsedData);
         }
     });
 
     res.sendStatus(200);
+});
+
+app.delete("/api/notes/:id", (req, res) => {
+    // console.log(`received a delete request`);
+    // console.log(req.params);
+
+    const idNum = req.params.id;
+    // console.log(`id is ${id}`);
+
+    const filePath = "./db/db.json";
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+        } else {
+            const parsedData = JSON.parse(data);
+            const indexOfDeletion = parsedData.findIndex(elem => elem.id == idNum);
+            console.log(`indexOfDeletion is ${indexOfDeletion}`);
+            parsedData.splice(indexOfDeletion, 1);
+            writeToFile(filePath, parsedData);
+        }
+    });
+
+// Issue: Deletions aren't appearing on the page w/o a refresh, but only sometimes. 
+// I found a workaround below but it seems kind of jury-rigged and produces error messages.
+// Is there an issue with how I'm doing my deletions further up the chain that's causing this?
+    // res.sendStatus(200);
+    // return res.send();
+    // res.send();
+    res.redirect("/notes");
 });
 
 app.listen(PORT, () => {
